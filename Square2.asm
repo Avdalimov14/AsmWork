@@ -7,10 +7,10 @@ DATASEG
 ; --------------------------
 drawCounterForX db 0
 drawCounterForY db 0
-xPlace db 150 ; initial x value
-yPlace db 100 ; initial y value
+xPlace db 90 ; initial x value
+yPlace db 90 ; initial y value
 sideSize equ 20
-xEdge equ 255
+xEdge equ 180
 yEdge equ 180
 
 CODESEG
@@ -20,8 +20,8 @@ proc DrawSquare
 	; mov bp,sp
 	; push ax
 	; push bx
-	push cx
 	push dx
+	push cx
 
     ;mov cx,150;x value 
     ;mov dx,100;y value 
@@ -39,12 +39,13 @@ proc DrawSquare
 	inc [drawCounterForY]
 	mov [drawCounterForX],0
 	inc dx
-	mov cx,150
+	pop cx; mov cx,150
+	push cx; ...
 	cmp [drawCounterForY],sideSize
 	jne DrawSquareLoop
 	
-	pop dx
 	pop cx	
+	pop dx
 	ret
 endp 
 
@@ -53,8 +54,8 @@ proc DeleteSquare
 	; mov bp,sp
 	; push ax
 	; push bx
-	push cx
 	push dx
+	push cx
 
    ; mov cx,150;x value 
    ; mov dx,100;y value 
@@ -72,31 +73,25 @@ proc DeleteSquare
 	inc [drawCounterForY]
 	mov [drawCounterForX],0
 	inc dx
-	mov cx,150
+	pop cx; mov cx,150
+	push cx; ...
 	cmp [drawCounterForY],sideSize
 	jne DeleteSquareLoop
 	
-	pop dx
 	pop cx
+	pop dx
 	ret
 endp 
 
-;DELAY 500000 (7A120h).
+;DELAY 500000 (0A120h).
 proc delay 
 
 	push cx
 	push dx  
-	system_time:   
-	;GET SYSTEM TIME.
-	  mov  ah, 2ch
-	  int  21h ;RETURN HUNDREDTHS IN DL.
-	;CHECK IF 20 HUNDREDTHS HAVE PASSED. 
-	  ;xor  dh, dh   ;MOVE HUNDREDTHS...
-	  mov  ax, dx   ;...TO AX REGISTER.
-	  mov  bl, 1
-	  div  bl       ;HUNDREDTHS / 20.
-	  cmp  ah, 0    ;REMAINDER.
-	  jnz  system_time
+	  mov cx, 0      ;HIGH WORD.
+	mov dx, 0A120h ;LOW WORD.
+	mov ah, 86h    ;WAIT.
+	int 15h
 	pop dx
 	pop cx
 	ret
@@ -111,7 +106,7 @@ start:
 	int 10h
 	
 DrawBall:
-call delay
+
 mov ch, 0
 mov cl,[xPlace] ;x value 
 mov dh, 0
@@ -119,12 +114,12 @@ mov dl,[yPlace] ;y value
 call DrawSquare
 ; mov ah,00h
 ; int 16h
-
+call delay
 call DeleteSquare
-; mov ah,00h
-; int 16h
-; cmp ah, 1h
-; je exit
+mov ah,00h
+int 16h
+cmp ah, 1h
+je exit
 
 inc [xPlace]
 inc [yPlace]
